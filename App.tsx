@@ -6,6 +6,9 @@ import { UploadedFiles, ProcessingState, GenerationResult } from './types';
 import { PROMPT_1 as DEFAULT_PROMPT_1, PROMPT_2 as DEFAULT_PROMPT_2 } from './constants';
 
 const App: React.FC = () => {
+  // Check for API Key at startup (injected by Vite at build time)
+  const envApiKey = process.env.API_KEY;
+  
   // State for user-provided settings
   const [modelId, setModelId] = useState<string>('gemini-3-pro-preview'); // Default to 3.0 Pro
   
@@ -28,6 +31,58 @@ const App: React.FC = () => {
       setModelId(storedModel);
     }
   }, []);
+
+  // Show Guidance Screen if API Key is missing
+  if (!envApiKey) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans">
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg text-center animate-in fade-in zoom-in duration-300">
+           <div className="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-amber-600">
+             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+             </svg>
+           </div>
+           <h2 className="text-xl font-bold text-slate-800 mb-3">未检测到 API Key</h2>
+           <p className="text-slate-600 mb-6 leading-relaxed text-sm">
+             为了提升安全性，API Key 现已通过环境变量进行统一管理。<br/>
+             请根据您的部署环境，按照下方指南进行配置：
+           </p>
+           
+           <div className="bg-slate-50 p-5 rounded-xl text-left text-sm text-slate-700 space-y-4 mb-8 border border-slate-200">
+             <div className="flex gap-3">
+               <div className="bg-black text-white px-2 py-0.5 rounded text-xs h-fit font-mono mt-0.5">Vercel</div>
+               <div className="flex-1">
+                 <p className="mb-1 font-medium">在部署设置中添加环境变量：</p>
+                 <code className="block bg-slate-200 px-2 py-1.5 rounded text-slate-800 font-mono text-xs mb-1">Key: API_KEY</code>
+                 <code className="block bg-slate-200 px-2 py-1.5 rounded text-slate-800 font-mono text-xs">Value: 您的 Gemini API Key</code>
+                 <p className="text-xs text-slate-500 mt-1">*配置完成后请重新部署 (Redeploy) 才能生效。</p>
+               </div>
+             </div>
+             
+             <div className="h-px bg-slate-200 w-full"></div>
+
+             <div className="flex gap-3">
+               <div className="bg-indigo-600 text-white px-2 py-0.5 rounded text-xs h-fit font-mono mt-0.5">本地</div>
+               <div className="flex-1">
+                  <p className="mb-1 font-medium">在根目录创建 <code className="bg-slate-200 px-1 rounded">.env</code> 文件并添加：</p>
+                  <code className="block bg-slate-200 px-2 py-1.5 rounded text-slate-800 font-mono text-xs">API_KEY=您的Key</code>
+               </div>
+             </div>
+           </div>
+           
+           <button 
+             onClick={() => window.location.reload()} 
+             className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
+           >
+             已配置，刷新页面
+           </button>
+           <p className="mt-4 text-xs text-slate-400">
+            没有 Key? <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline">点击免费获取</a>
+           </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
